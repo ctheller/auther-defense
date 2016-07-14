@@ -17,6 +17,7 @@ router.param('id', function (req, res, next, id) {
 });
 
 router.get('/', function (req, res, next) {
+  if (!req.user) return res.send("Unauthorized");
   Story.findAll({
     include: [{model: User, as: 'author'}],
     attributes: {exclude: ['paragraphs']}
@@ -28,6 +29,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', function (req, res, next) {
+  if (!req.user) return res.send("Unauthorized");
   Story.create(req.body)
   .then(function (story) {
     return story.reload({include: [{model: User, as: 'author'}]});
@@ -39,6 +41,7 @@ router.post('/', function (req, res, next) {
 });
 
 router.get('/:id', function (req, res, next) {
+  if (!req.user) return res.send("Unauthorized");
   req.story.reload({include: [{model: User, as: 'author'}]})
   .then(function (story) {
     res.json(story);
@@ -47,6 +50,8 @@ router.get('/:id', function (req, res, next) {
 });
 
 router.put('/:id', function (req, res, next) {
+  if (!req.user) return res.send("Unauthorized");
+  if (!req.user.isAdmin) return res.send("Unauthorized");
   req.story.update(req.body)
   .then(function (story) {
     res.json(story);
@@ -55,6 +60,8 @@ router.put('/:id', function (req, res, next) {
 });
 
 router.delete('/:id', function (req, res, next) {
+  if (!req.user) return res.send("Unauthorized");
+  if (!req.user.isAdmin) return res.send("Unauthorized");
   req.story.destroy()
   .then(function () {
     res.status(204).end();
